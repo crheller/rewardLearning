@@ -4,18 +4,17 @@ import datetime as dt
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import plotting as cplt
 from scipy.optimize import curve_fit
 
 runclass = 'BVT'
-animal = 'Drechsler'
+animal = 'Cordyceps'
 an_regex = "%"+animal+"%"
 min_trials = 50
 earliest_date = '2019_10_03'  # date when we started repeating unrewarded trials
 earliest_date = '2019_11_03'
+earliest_date = '2020_06_08'
 valid = True
 verbose = True
-figpath = '/auto/users/hellerc/code/projects/rewardLearning/behavioral_analysis/plots/'
 # get list of all training parmfiles
 sql = "SELECT parmfile, resppath FROM gDataRaw WHERE runclass=%s and resppath like %s and training = 1 and bad=0 and trials>%s and behavior='active'"
 parmfiles = nd.pd_query(sql, (runclass, an_regex, min_trials))
@@ -25,7 +24,7 @@ parmfiles['date'] = [dt.datetime.strptime('-'.join(x.split('_')[1:-2]), '%Y-%m-%
 ed = dt.datetime.strptime(earliest_date, '%Y_%m_%d')
 parmfiles = parmfiles[parmfiles.date > ed]
 
-# for each day, compute relevant stats / save per-day plots
+# for each day, compute relevant stats
 days = np.unique(parmfiles['date'])
 cols = ['DI_rew', 'DI_nrew']
 results_df = pd.DataFrame(index=days, columns=cols)
@@ -112,7 +111,6 @@ for i, day in enumerate(days):
         ax1.set_xlabel('Reaction time', fontsize=8)
         ax1.set_ylabel('HR', fontsize=8)
         ax1.set_title("All trials", fontsize=8)
-        ax1.set_aspect(cplt.get_square_asp(ax1))
 
         # plot DI
         di = []
@@ -124,7 +122,6 @@ for i, day in enumerate(days):
         ax2.legend(fontsize=8)
         ax2.set_ylabel('DI')
         ax2.set_ylim((0, 1))
-        ax2.set_aspect(cplt.get_square_asp(ax2))
 
         f.tight_layout()
 
@@ -133,7 +130,6 @@ for i, day in enumerate(days):
             day_string += '_validTrials'
         else:
             day_string += '_allTrials'
-        f.savefig(figpath+day_string+'.png')
 
     results_df.loc[day][cols] = [np.mean(rdi), np.nanmean(nrdi)]
 
@@ -141,7 +137,7 @@ if not verbose:
     plt.close('all')
 
 # plot by day
-f, ax = plt.subplots(2, 1, sharex=True)
+f, ax = plt.subplots(2, 1, sharex=True, figsize=(8, 4))
 
 ax[0].plot(results_df['DI_rew'].values, 'o-', color='blue', label='rewarded')
 ax[0].plot(results_df['DI_nrew'].values, 'o-', color='red', label='non-rewarded')
@@ -163,7 +159,7 @@ f.tight_layout()
 
 
 # plot by block
-f, ax = plt.subplots(3, 1, sharex=True)
+f, ax = plt.subplots(3, 1, sharex=True, figsize=(12, 4))
 
 ax[0].plot(block_results_df['DI_rew'].values, 'o-', color='blue', label='rewarded')
 ax[0].plot(block_results_df['DI_nrew'].values, 'o-', color='red', label='non-rewarded')
@@ -191,7 +187,6 @@ if valid:
     fn += '_validTrials'
 else:
     fn += '_allTrials'
-f.savefig(figpath+fn+'.png')
 
 f.tight_layout()
 
@@ -212,7 +207,7 @@ nrdi_lf =block_results_df[mask2]['DI_nrew'].mean()
 rdi_lf_sem = block_results_df[mask2]['DI_rew'].sem()
 nrdi_lf_sem =block_results_df[mask2]['DI_nrew'].sem()
 
-f, ax = plt.subplots(1, 2)
+f, ax = plt.subplots(1, 2, figsize=(8, 4))
 
 ax[0].set_title('all blocks')
 ax[0].errorbar([0, 1], [rdi_hf, nrdi_hf], yerr=[rdi_hf_sem, nrdi_hf_sem], color='grey', label='high freq. rewarded')
@@ -220,7 +215,6 @@ ax[0].errorbar([0, 1], [rdi_lf, nrdi_lf], yerr=[rdi_lf_sem, nrdi_lf_sem], color=
 ax[0].legend(fontsize=8)
 ax[0].set_xticks([0, 1])
 ax[0].set_xticklabels(['rewarded', 'unrewarded'])
-ax[0].set_aspect(cplt.get_square_asp(ax[0]))
 
 ax[1].set_title('exclude reversal blocks')
 m = block_results_df['reversal']
@@ -239,7 +233,6 @@ ax[1].errorbar([0, 1], [rdi_lf, nrdi_lf], yerr=[rdi_lf_sem, nrdi_lf_sem], color=
 ax[1].legend(fontsize=8)
 ax[1].set_xticks([0, 1])
 ax[1].set_xticklabels(['rewarded', 'unrewarded'])
-ax[1].set_aspect(cplt.get_square_asp(ax[1]))
 
 # plot as function of octave separation between rew. / un. rew.
 
@@ -249,13 +242,12 @@ oct_range = np.arange(0, np.max(block_results_df['octave_sep']+1), 0.1)
 rew_pref = (block_results_df['DI_rew'] - block_results_df['DI_nrew']) / \
             (block_results_df['DI_rew'] + block_results_df['DI_nrew'])
 
-f, ax = plt.subplots(1, 2)
+f, ax = plt.subplots(1, 2, figsize=(8, 4))
 ax[0].plot(block_results_df['octave_sep'], rew_pref, 'ko')
 ax[0].set_xlim((0, 10.5))
 ax[0].set_ylabel('Rew. Preference')
 ax[0].set_xlabel('sepatation (octaves)')
 ax[0].axhline(0, linestyle='--', color='grey')
-ax[0].set_aspect(cplt.get_square_asp(ax[0]))
 
 ax[1].plot(block_results_df['octave_sep'], block_results_df['DI_rew'], 'bo', label='rewarded')
 ax[1].plot(block_results_df['octave_sep'], block_results_df['DI_nrew'], 'ro', label='non-rewarded')
@@ -264,6 +256,5 @@ ax[1].set_ylabel('DI')
 ax[1].set_xlabel('sepatation (octaves)')
 ax[1].axhline(0.5, linestyle='--', color='grey')
 ax[1].legend(fontsize=8)
-ax[1].set_aspect(cplt.get_square_asp(ax[1]))
 
 plt.show()
