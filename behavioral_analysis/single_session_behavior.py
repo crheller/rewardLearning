@@ -16,7 +16,6 @@ def get_square_asp(ax):
     asp = np.diff(ax.get_xlim())[0] / np.diff(ax.get_ylim())[0]
     return asp
 
-
 options = {'pupil': False, 'rasterfs': 100}
 window_length = 20
 
@@ -25,10 +24,11 @@ p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_10_BVT_8.m'
 p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_09_BVT_1.m'
 p4 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_06_BVT_1.m'
 
-p1 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_11_BVT_4.m'
-p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_11_BVT_7.m'
+p1 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_18_BVT_2.m'
+p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_18_BVT_4.m'
+p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_18_BVT_6.m'
 
-parmfiles = [[p1, p2]]
+parmfiles = [[p1, p2, p3]]
 
 for pf in parmfiles:
     manager = BAPHYExperiment(pf)
@@ -44,6 +44,9 @@ for pf in parmfiles:
     invalid_time = rec['fileidx'].get_epoch_bounds('INVALID_BAPHY_TRIAL')
     trial_epochs = rec['fileidx'].get_epoch_bounds('TRIAL')
     good_trials = [i+1 for i in range(0, trial_epochs.shape[0]) if trial_epochs[i] not in invalid_time]
+    if type(pf) is list:
+        file_epochs = rec['fileidx'].get_epoch_bounds([e for e in rec.epochs.name.unique() if 'FILE_' in e])
+        file_dividers = [np.argwhere(np.diff(trial_epochs[:, 1]<=f[1]))[0][0] for f in file_epochs[:-1]]
 
     step = 2
     trialidx = np.arange(0, len(good_trials)-window_length+step, step)
@@ -64,7 +67,7 @@ for pf in parmfiles:
     NRTarget = TargetFreq[PumpDur==0]
     NRTargetStr = [str(r) for r in NRTarget]
 
-    for i,s in enumerate(trialidx):
+    for i, s in enumerate(trialidx):
         print("{0} / {1}".format(s, len(good_trials)))
         e = np.min([s+window_length, len(good_trials)])
         trials = good_trials[s:e]
@@ -97,7 +100,7 @@ for pf in parmfiles:
             nrtidx = i
 
 
-    f, ax = plt.subplots(1, 1)
+    f, ax = plt.subplots(1, 1, figsize=(8, 3))
 
     tt = np.array(good_trials)[trialidx]
     ax.plot(tt, HR, '.-', label=targets[rtidx])
@@ -109,11 +112,15 @@ for pf in parmfiles:
 
     ax.set_ylim((0, 1.1))
     ax.set_ylabel('Hit rate')
-    ax.legend()
+    ax.legend(frameon=False)
     if type(pf) == list:
         ax.set_title(os.path.basename(pf[0]))
     else:
         ax.set_title(os.path.basename(pf))
+
+    if type(pf) is list:
+        for d in file_dividers:
+            ax.axvline(tt.flat[np.abs(tt - d).argmin() - int(window_length / step)] , color='k', lw=2)
 
     f.tight_layout()
 

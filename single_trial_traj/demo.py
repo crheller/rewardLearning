@@ -15,15 +15,14 @@ import matplotlib.pyplot as plt
 
 import charlieTools.plotting as cplt
 
-site = 'DRX005c'
+site = 'DRX005c.e65:128'
 batch = 302
-shank = 'right'
 single_PC = False
 
 rasterfs = 20
-ops = {'batch': batch, 'siteid': site, 'rasterfs': rasterfs, 'pupil': 1, 'stim': 0, 'recache': False}
+ops = {'batch': batch, 'cellid': site, 'rasterfs': rasterfs, 'pupil': 1, 'stim': 0, 'recache': False}
 uri = nb.baphy_load_recording_uri(**ops)
-rec = Recording.load(uri)
+rec = Recording.load(uri[0])
 rec['resp'] = rec['resp'].rasterize()
 
 if shank=='left':

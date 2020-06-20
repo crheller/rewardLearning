@@ -50,7 +50,8 @@ for i, f in enumerate(files):
 
         # get target freqs
         tars = list(out_valid['DI'].keys())
-        tars = np.sort(tars)
+        int_tar = [int(t.replace('TAR_', '')) for t in tars]
+        tars = np.array(tars)[np.argsort(int_tar)]
         if len(tars) >= 2:
             exptparams = manager.get_baphy_exptparams()[0]
             pump_dur = np.array(exptparams['BehaveObject'][1]['PumpDuration'])
