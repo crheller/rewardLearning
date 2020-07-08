@@ -18,17 +18,20 @@ def get_square_asp(ax):
 
 options = {'pupil': False, 'rasterfs': 100}
 window_length = 20
+cum = False
 
 p1 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_10_BVT_5.m'
 p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_10_BVT_8.m'
 p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_09_BVT_1.m'
 p4 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_06_BVT_1.m'
 
-p1 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_18_BVT_2.m'
-p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_18_BVT_4.m'
-p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_18_BVT_6.m'
+p1 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_07_TBP_1.m'
+p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_07_TBP_3.m'
+p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_06_TBP_5.m'
+#p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_26_BVT_5.m'
+#p4 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_25_BVT_7.m'
 
-parmfiles = [[p1, p2, p3]]
+parmfiles = [[p1, p2]]
 
 for pf in parmfiles:
     manager = BAPHYExperiment(pf)
@@ -49,7 +52,10 @@ for pf in parmfiles:
         file_dividers = [np.argwhere(np.diff(trial_epochs[:, 1]<=f[1]))[0][0] for f in file_epochs[:-1]]
 
     step = 2
-    trialidx = np.arange(0, len(good_trials)-window_length+step, step)
+    if cum:
+        trialidx = np.arange(0, len(good_trials), step)
+    else:
+        trialidx = np.arange(0, len(good_trials)-window_length+step, step)
     trialcount = len(trialidx)
     HR = np.zeros(trialcount)
     HR2 = np.zeros(trialcount)
@@ -70,7 +76,11 @@ for pf in parmfiles:
     for i, s in enumerate(trialidx):
         print("{0} / {1}".format(s, len(good_trials)))
         e = np.min([s+window_length, len(good_trials)])
-        trials = good_trials[s:e]
+        if cum:
+            start = 0
+        else:
+            start = s
+        trials = good_trials[start:e]
         out = manager.get_behavior_performance(trials=trials, **options)
         k = [k for k in out['LI'].keys() if '+'.join(RTargetStr)==k.split('_')[0]][0]
         LI_di[i] = out['LI'][k]
@@ -109,6 +119,7 @@ for pf in parmfiles:
     ax.plot(tt, LI, '--', label='LI')
     #ax.plot(tt, LI_far, '--', label='LI_far')
     ax.plot(tt, LI_di, '--', label='LI_di')
+    ax.axhline(0.5, lw=2, color='red')
 
     ax.set_ylim((0, 1.1))
     ax.set_ylabel('Hit rate')

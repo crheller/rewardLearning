@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import scipy.ndimage.filters as sf
 
 mfile = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_18_BVT_3.m'
+mfile = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_02_TBP_4.m'
 
 manager = BAPHYExperiment(mfile)
 rec = manager.get_recording(**{'rasterfs': 100})
