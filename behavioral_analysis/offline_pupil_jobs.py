@@ -9,7 +9,7 @@ pupil_python = '/auto/users/hellerc/anaconda3/envs/pupil_analysis/bin/python'
 all_files = os.listdir(folder)
 video_files = [f for f in all_files if '.avi' in f]
 ed = '2020_06_16'
-ld = '2020_06_29'
+ld = '2020_07_08'
 ed = dt.datetime.strptime(ed, '%Y_%m_%d')
 ld = dt.datetime.strptime(ld, '%Y_%m_%d')
 
