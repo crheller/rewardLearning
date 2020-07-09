@@ -1,44 +1,29 @@
 """
-pupil / face vids were mislabeled between 06.16.2020 and 07.02.2020 
-pupil vid should be .avi and face vid should be _2.avi
+face vids (only) were collected between 05/27 and 06/15.
+These should be named with _2 to avoid confusion with pupil videos
 
 write script to rename files
 """
 
 import os
-import datetime
+import datetime at dt
 
 folder = '/auto/data/daq/Cordyceps/training2020/'
 temp_file_dir = '/auto/users/hellerc/tmp_files/'
 
 all_files = os.listdir(folder)
 video_files = [f for f in all_files if '.avi' in f]
-numdays = 17
-base = datetime.datetime.today()
-date_range = [base - datetime.timedelta(days=x) for x in range(numdays)]
-date_range = ['_'.join([str(d.year), '0'+str(d.month), str(d.day)]) if len(str(d.day))==2 else 
-                    '_'.join([str(d.year), '0'+str(d.month), '0'+str(d.day)]) for d in date_range]
+ed = '2020_05_27'
+ld = '2020_06_15'
+ed = dt.datetime.strptime(ed, '%Y_%m_%d')
+ld = dt.datetime.strptime(ld, '%Y_%m_%d')
+
+vid_dates = [dt.datetime.strptime('-'.join(x.split('_')[1:4]), '%Y-%m-%d') for x in video_files]
+
 # keep videos in date range
-video_files = [v for v in video_files if v[10:20] in date_range]
+video_files = [v for i, v in zip(vid_dates, video_files) if (i >= ed) & (i <= ld)]
 
-vf_2 = [v for v in video_files if ('_2.avi' in v) & (len(v.split('_'))==7)]
-vf = [v for v in video_files if v not in vf_2]
-
-if len(vf) != len(vf_2):
-    raise ValueError('lengths should match...')
-
-# for each pair of files, swap names
-for f1, f2 in zip(vf, vf_2):
-    fp1 = folder + f1
-    fpt1 = temp_file_dir + f1
-    fp2 = folder + f2
-    fpt2 = temp_file_dir + f2
-
-    # move f1 to temp file
-    os.system('cp {0} {1}'.format(fp1, fpt1))
-    # move f2 to temp file (to be safe, have it as a backup)
-    os.system('cp {0} {1}'.format(fp2, fpt2))
-    
-    # copy temp files into their new names in the data dir
-    os.system('cp {0} {1}'.format(fpt2, fp1))
-    os.system('cp {0} {1}'.format(fpt1, fp2))
+for v in video_files:
+    v1 = os.path.join(folder, v)
+    v2 = os.path.join(folder, v.replace('.avi', '_2.avi'))
+    os.system('mv {0} {1}'.format(v1, v2))    
