@@ -12,8 +12,10 @@ an_regex = "%"+animal+"%"
 min_trials = 50
 earliest_date = '2019_10_03'  # date when we started repeating unrewarded trials
 earliest_date = '2019_11_09'
+latest_date = '2020_06_10'
 #earliest_date = '2020_06_08'
 valid = True
+di_li = True
 verbose = True
 # get list of all training parmfiles
 sql = "SELECT parmfile, resppath FROM gDataRaw WHERE runclass=%s and resppath like %s and training = 1 and bad=0 and trials>%s and behavior='active'"
@@ -22,7 +24,8 @@ parmfiles = nd.pd_query(sql, (runclass, an_regex, min_trials))
 # screen for dates
 parmfiles['date'] = [dt.datetime.strptime('-'.join(x.split('_')[1:-2]), '%Y-%m-%d') for x in parmfiles.parmfile]
 ed = dt.datetime.strptime(earliest_date, '%Y_%m_%d')
-parmfiles = parmfiles[parmfiles.date >= ed]
+ld = dt.datetime.strptime(latest_date, '%Y_%m_%d')
+parmfiles = parmfiles[(parmfiles.date >= ed) & (parmfiles.date <= ld)]
 files = [os.path.join(p[1]['resppath'], p[1]['parmfile']) for p in parmfiles.iterrows()]
 
 
@@ -79,10 +82,16 @@ for i, f in enumerate(files):
             rew_idx = [True if i>0 else False for i in pump_dur]
             rew_tar = np.array(tars)[rew_idx][0]
             nr_tar = np.array(tars)[~np.array(rew_idx)][0]
-            if np.argwhere(rew_idx)[0][0]==1:
-                LI[i, idx1, idx2] = (out_valid['RR'][rew_tar] - out_valid['RR'][nr_tar]) / (out_valid['RR'][rew_tar] + out_valid['RR'][nr_tar])
+            if not di_li:
+                if np.argwhere(rew_idx)[0][0]==1:
+                    LI[i, idx1, idx2] = (out_valid['RR'][rew_tar] - out_valid['RR'][nr_tar]) / (out_valid['RR'][rew_tar] + out_valid['RR'][nr_tar])
+                else:
+                    LI[i, idx2, idx1] = (out_valid['RR'][rew_tar] - out_valid['RR'][nr_tar]) / (out_valid['RR'][rew_tar] + out_valid['RR'][nr_tar])
             else:
-                LI[i, idx2, idx1] = (out_valid['RR'][rew_tar] - out_valid['RR'][nr_tar]) / (out_valid['RR'][rew_tar] + out_valid['RR'][nr_tar])
+                if np.argwhere(rew_idx)[0][0]==1:
+                    LI[i, idx1, idx2] = out_valid['LI']["{0}_{1}".format(rew_tar, nr_tar)]
+                else:
+                    LI[i, idx2, idx1] = out_valid['LI']["{0}_{1}".format(rew_tar, nr_tar)]
 
             # Trial counts
             totalBaphyTrials[i] = rec.epochs[rec.epochs.name=='TRIAL'].shape[0]
@@ -126,7 +135,10 @@ tarax = plt.subplot2grid((2, 3), (1, 1)) # target reps vs time
 refax = plt.subplot2grid((2, 3), (1, 2)) # ref reps vs. time
 
 # plot average learning index as function of rew. and n.r. center freq
-liax.imshow(np.nanmean(LI, axis=0), aspect='auto', cmap='PRGn', vmin=-0.5, vmax=0.5, origin='lower')
+if di_li:
+    liax.imshow(np.nanmean(LI - 0.5, axis=0), aspect='auto', cmap='PRGn', vmin=-0.25, vmax=0.25, origin='lower')
+else:
+    liax.imshow(np.nanmean(LI, axis=0), aspect='auto', cmap='PRGn', vmin=-0.5, vmax=0.5, origin='lower')
 liax.set_xticks(range(0, len(cfs)))
 liax.set_xticklabels(cfs.astype(int), rotation=45, fontsize=8)
 liax.set_yticks(range(0, len(cfs)))
