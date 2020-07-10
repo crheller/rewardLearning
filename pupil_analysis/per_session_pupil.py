@@ -77,4 +77,63 @@ rtax.legend(frameon=False)
 
 f.tight_layout()
 
+# plot per trial pupil heatmaps (normalized to trial start and raw), sorted by trial length
+behavior_outcomes = ['HIT_TRIAL', 'INCORRECT_HIT_TRIAL', 'FALSE_ALARM_TRIAL', 'MISS_TRIAL', 'CORRECT_REJECT_TRIAL']
+ymax = 75
+nmin = -40
+nmax = 40
+f2, ax2 = plt.subplots(1, 5, figsize=(12, 8))
+for b, a2 in zip(behavior_outcomes, ax2):
+    p = rec['pupil'].extract_epoch(b)
+    tlen = [sum(~np.isnan(p[i,0,:])) for i in range(p.shape[0])]  
+    idx = np.argsort(tlen)
+    p = p[idx, 0, :]
+
+    # normalize to trial onset
+    m = np.nanmean(p[:, :20], axis=-1)
+    p = (p.T - m).T
+    a2.imshow(p, cmap='PiYG', aspect='auto', vmin=nmin, vmax=nmax)
+    a2.set_title(b)
+    a2.set_xlim((0, 1000))
+    a2.set_ylim((0, ymax))
+
+f2.tight_layout()
+
+# plot per trial heatmaps for passive, sorted by target category
+targets = [e for e in rec.epochs.name.unique() if 'TAR_' in e]
+ymax = 100
+nmin = -30
+nmax = 30
+
+for t in targets:
+    if t not in rec.signals.keys():
+        rec[t] = rec['pupil'].epoch_to_signal(t)
+
+f, ax = plt.subplots(1, len(targets), figsize=(8, 6))
+if len(targets) > 1:
+    pass
+else: ax = [ax]
+
+for a, t in zip(ax, targets):
+
+    r = rec.copy()
+    r = r.and_mask(['PASSIVE_EXPERIMENT'])
+    p = r['pupil'].extract_epoch('TRIAL', mask=r['mask'])
+    tar_mask = r[t].extract_epoch('TRIAL', mask=r['mask'])
+    mask = tar_mask[:, 0, :].sum(axis=(-1)) > 0
+    p = p[mask, :, :]
+    tlen = [sum(~np.isnan(p[i,0,:])) for i in range(p.shape[0])]  
+    idx = np.argsort(tlen)
+    p = p[idx, 0, :]
+
+    # normalize to trial onset
+    m = np.nanmean(p[:, :20], axis=-1)
+    p = (p.T - m).T
+    a.imshow(p, cmap='PiYG', aspect='auto', vmin=nmin, vmax=nmax)
+    a.set_title('PASSIVE TRIAL, {}'.format(t))
+    a.set_xlim((0, 700))
+    a.set_ylim((0, ymax))
+
+f.tight_layout()
+
 plt.show()
