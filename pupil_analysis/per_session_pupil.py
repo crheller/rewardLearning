@@ -136,4 +136,54 @@ for a, t in zip(ax, targets):
 
 f.tight_layout()
 
+
+# get lick triggered pupil
+f, ax = plt.subplots(1, 2, figsize=(12, 5))
+te = 5  # seconds
+teidx = te * rasterfs
+ts = 2  # seconds prior to lick
+tsidx = ts * rasterfs
+licks = rec['pupil'].get_epoch_indices('LICK')[:, 0]
+ttypes = ['HIT_TRIAL', 'INCORRECT_HIT_TRIAL', 'FALSE_ALARM_TRIAL', 'PASSIVE_EXPERIMENT'] # trials with licks
+for ttype in ttypes:
+    r = rec.copy()
+    r = r.and_mask(ttype)
+    trial_indices = r['pupil'].get_epoch_indices('TRIAL', mask=r['mask'])
+    t_licks = np.array([licks[np.argwhere((licks>=ti[0]) & (licks<=ti[1]))][0][0] for ti in trial_indices
+                             if np.argwhere((licks>=ti[0]) & (licks<=ti[1])).size > 0])
+
+    indices = np.stack([t_licks-tsidx, t_licks+teidx]).T
+    indices = indices[indices[:,0]>0]
+    data = np.zeros((indices.shape[0], tsidx+teidx))
+    for i, (lb, ub) in enumerate(indices):
+        data[i, :] = rec['pupil']._data[0, lb:ub]
+
+
+    t = np.linspace(-ts, te, data.shape[-1])
+    m = data.mean(axis=0)
+    sem = data.std(axis=0) / np.sqrt(data.shape[0])
+    ax[0].plot(t, m, label=ttype)
+    ax[0].fill_between(t, m-sem, m+sem, alpha=0.3, lw=0)
+
+    # normalize to 2 s pre-lick
+    data = (data.T - data[:, :20].mean(axis=-1)).T
+    t = np.linspace(-ts, te, data.shape[-1])
+    m = data.mean(axis=0)
+    sem = data.std(axis=0) / np.sqrt(data.shape[0])
+    ax[1].plot(t, m, label=ttype)
+    ax[1].fill_between(t, m-sem, m+sem, alpha=0.3, lw=0)
+
+
+ax[0].axvline(0, linestyle='--', color='k', label='lick onset')
+ax[0].legend(frameon=False)
+ax[0].set_xlabel('Time (s)')   
+ax[0].set_ylabel('Pupil size') 
+
+ax[1].axvline(0, linestyle='--', color='k', label='lick onset')
+ax[1].legend(frameon=False)
+ax[1].set_xlabel('Time (s)')   
+ax[1].set_ylabel('Pupil size (normalized)') 
+
+f.tight_layout()
+
 plt.show()
