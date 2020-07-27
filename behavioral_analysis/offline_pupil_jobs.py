@@ -8,8 +8,8 @@ pupil_python = '/auto/users/hellerc/anaconda3/envs/pupil_analysis/bin/python'
 
 all_files = os.listdir(folder)
 video_files = [f for f in all_files if '.avi' in f]
-ed = '2020_06_16'
-ld = '2020_07_08'
+ed = '2020_07_09'
+ld = '2020_07_14'
 ed = dt.datetime.strptime(ed, '%Y_%m_%d')
 ld = dt.datetime.strptime(ld, '%Y_%m_%d')
 
@@ -22,8 +22,11 @@ video_files = [os.path.join(folder, v) for v in video_files]
 # remove face videos
 video_files = video_files[0::2][:-1]
 
+# remove NAT pupil videos
+video_files = [v for v in video_files if '_NAT_' not in v]
+
 # ====================== QUEUE JOBS ========================
-queue_pupil_jobs(video_files, python_path=pupil_python, username='hellerc', force_rerun=False)
+queue_pupil_jobs(video_files, python_path=pupil_python, username='hellerc', force_rerun=True)
 
 # ========================= SAVE RESULTS ======================
 # update complete status (save predictions and update celldb)

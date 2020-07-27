@@ -25,13 +25,13 @@ p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_10_BVT_8.m'
 p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_09_BVT_1.m'
 p4 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_06_BVT_1.m'
 
-p1 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_07_TBP_1.m'
-p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_07_TBP_3.m'
-p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_06_TBP_5.m'
+p1 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_09_TBP_1.m'
+p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_09_TBP_3.m'
+p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_09_TBP_6.m'
 #p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_26_BVT_5.m'
 #p4 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_25_BVT_7.m'
 
-parmfiles = [[p1, p2]]
+parmfiles = [[p1, p2, p3]]
 
 for pf in parmfiles:
     manager = BAPHYExperiment(pf)
