@@ -8,7 +8,7 @@
 import nems_lbhb.behavior as beh
 import matplotlib.pyplot as plt
 import numpy as np
-import nems_lbhb.io as io
+import nems_lbhb.baphy_io as io
 from nems_lbhb.baphy_experiment import BAPHYExperiment
 import os
 
@@ -25,9 +25,22 @@ p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_10_BVT_8.m'
 p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_09_BVT_1.m'
 p4 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_03_06_BVT_1.m'
 
+<<<<<<< HEAD
 p1 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_09_TBP_1.m'
 p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_09_TBP_3.m'
 p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_09_TBP_6.m'
+=======
+p1 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_07_TBP_1.m'
+p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_07_TBP_3.m'
+p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_06_TBP_5.m'
+
+# with catch trials (need to do something about the "cue" target -- 
+# shouldn't be lumped with the real target, probabaly)
+p1 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_24_TBP_1.m'
+p2 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_24_TBP_3.m'
+p3 =  '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_07_24_TBP_5.m'
+
+>>>>>>> 8a77d8e2d72058161f999a0de25aac5f256f0010
 #p3 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_26_BVT_5.m'
 #p4 = '/auto/data/daq/Cordyceps/training2020/Cordyceps_2020_06_25_BVT_7.m'
 
@@ -82,7 +95,10 @@ for pf in parmfiles:
             start = s
         trials = good_trials[start:e]
         out = manager.get_behavior_performance(trials=trials, **options)
-        k = [k for k in out['LI'].keys() if '+'.join(RTargetStr)==k.split('_')[0]][0]
+        try:
+            k = [k for k in out['LI'].keys() if ','.join(RTargetStr)==k.split('_')[0]][0]
+        except:
+            k = [k for k in out['LI'].keys() if '+'.join(RTargetStr)==k.split('_')[0]][0]
         LI_di[i] = out['LI'][k]
 
         # deal with multiple targets
