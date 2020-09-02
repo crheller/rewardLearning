@@ -12,7 +12,7 @@ for pen in pens:
     files = os.listdir(os.path.join(path, pen))
     files = [f for f in files if f.endswith('.avi') & ~f.endswith('_2.avi')]
     files = [f for f in files if os.path.splitext(f)[0].split('_')[-1] in runclass]
-
+    files = [os.path.join(path, pen, f) for f in files]
     videos.extend(files)
 
 queue_vids = []
